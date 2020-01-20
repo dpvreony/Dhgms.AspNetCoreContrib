@@ -7,10 +7,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Dhgms.AspNetCoreContrib.Example.WebMvcApp.Hubs;
 using Dhgms.AspNetCoreContrib.Fakes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -39,7 +41,12 @@ namespace Dhgms.AspNetCoreContrib.Examples.WebMvcApp
         /// <inheritdoc />
         protected override void OnConfigureServices(IServiceCollection services)
         {
+            services.AddSignalR(ConfigureSignalR);
             services.AddStuntman(_stuntmanOptions);
+        }
+
+        private void ConfigureSignalR(HubOptions hubOptions)
+        {
         }
 
         /// <inheritdoc />
@@ -48,6 +55,10 @@ namespace Dhgms.AspNetCoreContrib.Examples.WebMvcApp
             IWebHostEnvironment env,
             ILoggerFactory loggerFactory)
         {
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHub<FakeHub>("/fakehub");
+            });
             app.UseStuntman(_stuntmanOptions);
         }
 
