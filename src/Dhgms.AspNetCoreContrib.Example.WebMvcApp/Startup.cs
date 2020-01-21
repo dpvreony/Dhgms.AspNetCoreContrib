@@ -11,7 +11,9 @@ using Dhgms.AspNetCoreContrib.Example.WebMvcApp.Hubs;
 using Dhgms.AspNetCoreContrib.Fakes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,11 +57,18 @@ namespace Dhgms.AspNetCoreContrib.Examples.WebMvcApp
             IWebHostEnvironment env,
             ILoggerFactory loggerFactory)
         {
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapHub<FakeHub>("/fakehub");
-            });
+            app.UseEndpoints(OnConfigureEndPointRoutes);
             app.UseStuntman(_stuntmanOptions);
+        }
+
+        private void OnConfigureEndPointRoutes(IEndpointRouteBuilder endpointRouteBuilder)
+        {
+            // todo: look at HubEndpointConventionBuilder
+            endpointRouteBuilder.MapHub<FakeHub>("/fakehub", ConfigureOptions);
+        }
+
+        private void ConfigureOptions(HttpConnectionDispatcherOptions httpConnectionDispatcherOptions)
+        {
         }
 
         /// <inheritdoc />
