@@ -4,5 +4,5 @@
   href: 00002-build-to-use-cake.md
 - name: 3. Documentation to use Doc-Fx
   href: 00003-documentation-to-use-docfx.md
-  
-  
+- name: 4. Dependency Management by Dependabot
+  href: 00004-dependency-management-by-dependabot.md
