@@ -1,3 +1,5 @@
+- name: Architecture Design Records
+  href: adr/
 - name: Articles
   href: articles/
 - name: Api Documentation
