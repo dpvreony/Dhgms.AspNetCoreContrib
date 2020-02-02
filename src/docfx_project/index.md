@@ -75,10 +75,26 @@ A query will typically be a read of data so is a **synchronous** message flow. T
 
 #### Post-Event Notifications to SignalR
 
-TODO
+```plantUml
+
+"Mediator" -> "Request Post-Processor" : CQRS RESPONSE
+"Request Post-Processor" -> "Message Factory" : CQRS RESPONSE
+"Message Factory" -> "Request Post-Processor" : Message
+"Request Post-Processor" -> "SignalR Hub Context" : Message
+"SignalR Hub Context" -> "SignalR Client" : Message
+
+```
 
 #### Post-Event Notifications to MessageBus
 
-TODO
+```plantUml
+
+"Mediator" -> "Request Post-Processor" : CQRS RESPONSE
+"Request Post-Processor" -> "Message Factory" : CQRS RESPONSE
+"Message Factory" -> "Request Post-Processor" : Message
+"Request Post-Processor" -> "MessageBus Client" : Message
+"MessageBus Client" -> "MessageBus Queue" : Message
+
+```
 
 ### Layer 5 Domain Logic
