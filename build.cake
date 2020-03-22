@@ -211,6 +211,15 @@ Task("RunUnitTests")
         .ExcludeByFile("*/*Designer.cs")
         .ExcludeByFile("*/*.g.cs")
         .ExcludeByFile("*/*.g.i.cs"));
+		
+	var percentageString = XmlPeek(testCoverageOutputFile, "CoverageSession/Summary/@branchCoverage");
+	double percentage;
+	double.TryParse(percentageString, out percentage);
+	if (percentage < 80)
+	{
+		throw new Exception("Code coverage below threshold of 80% (" + percentage + ")");
+	}
+	Information("Code Coverage Percentage: " + percentage);
 
     ReportGenerator(testCoverageOutputFile, openCoverArtifactDirectory);
 }).ReportError(exception =>
