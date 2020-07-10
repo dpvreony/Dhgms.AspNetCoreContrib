@@ -8,6 +8,7 @@ using System.Reflection;
 using Audit.Core.Providers;
 using Audit.WebApi;
 using Ben.Diagnostics;
+using Dhgms.AspNetCoreContrib.App.Features.AddServerDetailsToResponseHeader;
 using Dhgms.AspNetCoreContrib.App.Features.ApiAuthorization;
 using Dhgms.AspNetCoreContrib.App.Features.Apm;
 using Dhgms.AspNetCoreContrib.App.Features.Apm.HealthChecks;
@@ -29,7 +30,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
 using Microsoft.OpenApi.Models;
+using OwaspHeaders.Core.Enums;
 using OwaspHeaders.Core.Extensions;
+using OwaspHeaders.Core.Models;
 using RimDev.ApplicationInsights.Filters;
 using RimDev.ApplicationInsights.Filters.Processors;
 using Swashbuckle.AspNetCore.Swagger;
@@ -93,7 +96,9 @@ namespace Dhgms.AspNetCoreContrib.App
 
             ConfigureMediatrService(services);
 
-            services.AddProblemDetails();
+            /*
+             * services.AddProblemDetails();
+             */
 
             services.AddAuthorization(ConfigureAuthorization);
 
@@ -183,7 +188,9 @@ namespace Dhgms.AspNetCoreContrib.App
             if (env.IsDevelopment())
             {
                 app.UseBrowserLink();
-                app.UseDeveloperExceptionPage();
+                /*
+                 * app.UseDeveloperExceptionPage();
+                 */
             }
             else
             {
@@ -191,8 +198,11 @@ namespace Dhgms.AspNetCoreContrib.App
             }
 
             app.UseBlockingDetection();
+            app.UseAddServerDetailsToResponseHeaderMiddleware();
 
+            /*
             app.UseProblemDetails();
+            */
 
             var version = new Version(0, 1, 1, 9999);
 
@@ -201,24 +211,15 @@ namespace Dhgms.AspNetCoreContrib.App
             */
 
             var secureHeadersMiddlewareConfiguration = SecureHeadersMiddlewareExtensions.BuildDefaultConfiguration();
+            secureHeadersMiddlewareConfiguration.ContentSecurityPolicyConfiguration.ScriptSrc.Add(new ContentSecurityPolicyElement
+            {
+                CommandType = CspCommandType.Directive,
+                DirectiveOrUri = "sha256-JmYlLzVPGS/uHDTO3y5ZfdTGTovMHDZXjinrC4KdZEg="
+            });
+
             app.UseSecureHeadersMiddleware(secureHeadersMiddlewareConfiguration);
 
             app.UseStaticFiles();
-
-            app.UseAuditMiddleware(_ => _
-                .FilterByRequest(rq => !rq.Path.Value.EndsWith("favicon.ico", StringComparison.OrdinalIgnoreCase))
-                .WithEventType("{verb}:{url}")
-                .IncludeHeaders()
-                .IncludeRequestBody()
-                .IncludeResponseHeaders()
-                .IncludeResponseBody());
-            var fileDataProvider = Audit.Core.Configuration.DataProvider as FileDataProvider;
-            if (fileDataProvider != null)
-            {
-                // this was done so files don't get added to git
-                // as the visual studio .gitignore ignores log folders.
-                fileDataProvider.DirectoryPath = "log";
-            }
 
             /*
             _miniProfilerApplicationStartHelper.ConfigureApplication(app);
@@ -235,8 +236,12 @@ namespace Dhgms.AspNetCoreContrib.App
 
             app.UseRouting();
 
+            new HealthChecksApplicationStartHelper().ConfigureApplication(app);
+
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHealthChecksUI();
+
                 endpoints.MapControllerRoute(
                     "get",
                     "api/{controller}/{id?}",
@@ -245,6 +250,23 @@ namespace Dhgms.AspNetCoreContrib.App
             });
 
             OnConfigure(app, env, loggerFactory);
+
+            /*
+            app.UseAuditMiddleware(_ => _
+                .FilterByRequest(rq => !rq.Path.Value.EndsWith("favicon.ico", StringComparison.OrdinalIgnoreCase))
+                .WithEventType("{verb}:{url}")
+                .IncludeHeaders()
+                .IncludeRequestBody()
+                .IncludeResponseHeaders()
+                .IncludeResponseBody());
+            var fileDataProvider = Audit.Core.Configuration.DataProvider as FileDataProvider;
+            if (fileDataProvider != null)
+            {
+                // this was done so files don't get added to git
+                // as the visual studio .gitignore ignores log folders.
+                fileDataProvider.DirectoryPath = "log";
+            }
+            */
         }
 
         private void ConfigureControllerService(IServiceCollection services)
